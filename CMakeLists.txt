@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project(dlib)
 
-add_executable(kkmeans main.cpp)
+add_executable(kkmeans main.cpp bmp.h bmp.cpp)
 
 set_target_properties(kkmeans PROPERTIES
     CXX_STANDARD 14
