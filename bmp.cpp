@@ -1,10 +1,12 @@
 #include "bmp.h"
 #include <iostream>
 #include <cstring>
+#include <fstream>
 
 BMP::BMP(unsigned int width, unsigned int height)
 {
-    pixels = new BMPTriple[width*height];
+    m_size = width*height;
+    pixels = new BMPTriple[m_size];
     bihPrepare(width, height);
     bfhPrepare();
     palPrepare();
@@ -45,7 +47,44 @@ void BMP::palPrepare()
     std::memset(pallete, 0, sizeof(pallete));
 }
 
-void BMP::write(char* arr)
+void BMP::addPixel(unsigned int x, unsigned int y, char red, char green, char blue)
 {
+    BMPTriple elem{red, green, blue};
+    pixels[x*m_infoheader.width+y] = elem; // TODO: Проверить правильность расположения(т.е. х и у)
+}
 
+std::ofstream& operator<<(std::ofstream &out, const BMP& obj)
+{   //TODO: Доступ к полям через геттеры?
+    out << obj.m_fileheader.type
+        << obj.m_fileheader.size
+        << obj.m_fileheader.reserved1
+        << obj.m_fileheader.reserved2
+        << obj.m_fileheader.offsetBits;
+
+    out << obj.m_infoheader.length
+        << obj.m_infoheader.width
+        << obj.m_infoheader.height
+        << obj.m_infoheader.planes
+        << obj.m_infoheader.bitCount
+        << obj.m_infoheader.compression
+        << obj.m_infoheader.sizeImage
+        << obj.m_infoheader.xPelsPerMeter
+        << obj.m_infoheader.yPelsPerMeter
+        << obj.m_infoheader.colorsUsed
+        << obj.m_infoheader.colorsImportant;
+
+    for(size_t i = 0; i < 1024; ++i)
+    {
+        out << obj.pallete[i];
+    }
+
+    for(size_t i = 0; i < obj.m_size; ++i)
+    {
+        out << obj.pixels[i].blue
+            << obj.pixels[i].green
+            << obj.pixels[i].red;
+        //TODO: Нужно ли добивать нулями до 4-ёх байт?
+    }
+    //TODO: Нужно ли добивать файл нулями что бы он был кратен 4-ем байтам?
+    return out;
 }
