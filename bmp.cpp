@@ -1,7 +1,6 @@
 #include "bmp.h"
 #include <iostream>
 #include <cstring>
-#include <fstream>
 
 BMP::BMP(unsigned int width, unsigned int height)
 {
@@ -11,6 +10,11 @@ BMP::BMP(unsigned int width, unsigned int height)
     bfhPrepare();
     palPrepare();
     std::cout << sizeof(BMPTriple) << m_fileheader.offsetBits << '\n';
+}
+
+BMP::~BMP()
+{
+    delete pixels;
 }
 
 void BMP::bfhPrepare()
@@ -47,13 +51,13 @@ void BMP::palPrepare()
     std::memset(pallete, 0, sizeof(pallete));
 }
 
-void BMP::addPixel(unsigned int x, unsigned int y, char red, char green, char blue)
+void BMP::addPixel(unsigned int x, unsigned int y, unsigned char red, unsigned char green, unsigned char blue)
 {
     BMPTriple elem{red, green, blue};
     pixels[x*m_infoheader.width+y] = elem; // TODO: Проверить правильность расположения(т.е. х и у)
 }
 
-std::ofstream& operator<<(std::ofstream &out, const BMP& obj)
+std::ostream& operator<<(std::ostream &out, const BMP& obj)
 {   //TODO: Доступ к полям через геттеры?
     out << obj.m_fileheader.type
         << obj.m_fileheader.size

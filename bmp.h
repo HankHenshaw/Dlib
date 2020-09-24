@@ -1,11 +1,12 @@
 #pragma once
 
+#include <iosfwd>
 //TODO: данный бмп будет работать только для 32-бит
 struct BMPTriple
 {
-    char red;
-    char green;
-    char blue;
+    unsigned char red;
+    unsigned char green;
+    unsigned char blue;
 };
 
 struct BitmapFileHeader
@@ -45,7 +46,8 @@ public: //TODO: Remove!
     void bihPrepare(unsigned int width, unsigned int height);
     void palPrepare();
 public:
+    ~BMP();
     BMP(unsigned int width, unsigned int height);
-    void addPixel(unsigned int x, unsigned int y, char red, char green, char blue);
-    friend std::ofstream& operator<<(std::ofstream &fout, const BMP& obj);
+    void addPixel(unsigned int x, unsigned int y, unsigned char red, unsigned char green, unsigned char blue);
+    friend std::ostream& operator<<(std::ostream &out, const BMP& obj);
 };

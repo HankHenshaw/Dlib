@@ -29,9 +29,28 @@
 using namespace std;
 using namespace dlib;
 
+#include "bmp.h"
+#include <fstream>
 int main()
 {
-    std::cout << "Start\n";
+    std::cout << "Start BMP Test\n";
+    BMP bmp(20,20);
+    for(int i = 0; i < 20; i++) bmp.addPixel(0,i,255,0,0);
+    for(int i = 0; i < 20; i++) bmp.addPixel(1,i,255,255,0);
+    for(int i = 0; i < 20; i++) bmp.addPixel(2,i,255,255,255);
+    for(int i = 0; i < 20; i++) bmp.addPixel(3,i,255,0,255);
+    for(int i = 0; i < 20; i++) bmp.addPixel(4,i,0,0,0);
+    for(int i = 0; i < 20; i++) bmp.addPixel(5,i,0,255,255);
+    for(int i = 0; i < 20; i++) bmp.addPixel(6,i,0,255,0);
+    for(int i = 0; i < 20; i++) bmp.addPixel(7,i,0,0,255);
+    std::ofstream fout("test.bmp");
+    if(!fout.is_open()) std::cout << "Failed to open file\n";
+    else {
+        std::cout << "File successfully open\n";
+        fout << bmp;
+    }
+    std::cout << "End BMP Test\n";
+    return 1;
     // Here we declare that our samples will be 2 dimensional column vectors.  
     // (Note that if you don't know the dimensionality of your vectors at compile time
     // you can change the 2 to a 0 and then set the size at runtime)
