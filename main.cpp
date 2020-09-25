@@ -43,7 +43,7 @@ int main()
     for(int i = 0; i < 20; i++) bmp.addPixel(5,i,0,255,255);
     for(int i = 0; i < 20; i++) bmp.addPixel(6,i,0,255,0);
     for(int i = 0; i < 20; i++) bmp.addPixel(7,i,0,0,255);
-    std::ofstream fout("test.bmp");
+    std::ofstream fout("test7.bmp");
     if(!fout.is_open()) std::cout << "Failed to open file\n";
     else {
         std::cout << "File successfully open\n";

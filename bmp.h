@@ -35,11 +35,10 @@ struct BitmapInfoHeader
 
 class BMP
 {
-public: //TODO: Remove!
     BitmapFileHeader m_fileheader;
     BitmapInfoHeader m_infoheader;
     char pallete[1024];
-    BMPTriple *pixels; //TODO: Сделать двухмерным
+    BMPTriple *pixels;
     unsigned int m_size;
 
     void bfhPrepare();
@@ -49,5 +48,8 @@ public:
     ~BMP();
     BMP(unsigned int width, unsigned int height);
     void addPixel(unsigned int x, unsigned int y, unsigned char red, unsigned char green, unsigned char blue);
-    friend std::ostream& operator<<(std::ostream &out, const BMP& obj);
+    friend std::ostream& operator<<(std::ostream &out, BMP& obj);
+
+    BitmapFileHeader& getFileHeader();
+    BitmapInfoHeader& getInfoHeader();
 };
