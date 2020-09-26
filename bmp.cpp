@@ -54,7 +54,7 @@ void BMP::palPrepare()
 void BMP::addPixel(unsigned int x, unsigned int y, unsigned char red, unsigned char green, unsigned char blue)
 {
     BMPTriple elem{red, green, blue};
-    pixels[x*m_infoheader.width+y] = elem; // TODO: Проверить правильность расположения(т.е. х и у)
+    pixels[(m_infoheader.width-x-1)*m_infoheader.width+y] = elem;
 }
 
 std::ostream& operator<<(std::ostream &out, BMP& obj)
