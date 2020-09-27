@@ -6,6 +6,10 @@ BMP::BMP(unsigned int width, unsigned int height)
 {
     m_size = width*height;
     pixels = new BMPTriple[m_size];
+    for(size_t i = 0; i < m_size; ++i)
+    {
+        pixels[i] = {255, 255, 255};
+    }
     bihPrepare(width, height);
     bfhPrepare();
     palPrepare();
@@ -51,10 +55,14 @@ void BMP::palPrepare()
     std::memset(pallete, 0, sizeof(pallete));
 }
 
-void BMP::addPixel(unsigned int x, unsigned int y, unsigned char red, unsigned char green, unsigned char blue)
+void BMP::addPixel(int x, int y, unsigned char red, unsigned char green, unsigned char blue)
 {
+    if(x < 0 || y < 0)
+        return;
+    if(m_infoheader.width < x || m_infoheader.height < y) 
+        return;
     BMPTriple elem{red, green, blue};
-    pixels[(m_infoheader.width-x-1)*m_infoheader.width+y] = elem;
+    pixels[(m_infoheader.width-y-1)*m_infoheader.width+x] = elem;
 }
 
 std::ostream& operator<<(std::ostream &out, BMP& obj)

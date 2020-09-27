@@ -47,7 +47,7 @@ class BMP
 public:
     ~BMP();
     BMP(unsigned int width, unsigned int height);
-    void addPixel(unsigned int x, unsigned int y, unsigned char red, unsigned char green, unsigned char blue);
+    void addPixel(int x, int y, unsigned char red, unsigned char green, unsigned char blue);
     friend std::ostream& operator<<(std::ostream &out, BMP& obj);
 
     BitmapFileHeader& getFileHeader();

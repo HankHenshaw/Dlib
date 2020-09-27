@@ -31,26 +31,67 @@ using namespace dlib;
 
 #include "bmp.h"
 #include <fstream>
-int main()
+#include <utility>
+#include <cmath>
+
+void drawCircle(BMP &bmp, size_t centX, size_t centY, size_t rad, const std::vector<unsigned char>& cColor)
 {
-    std::cout << "Start BMP Test\n";
-    BMP bmp(20,20);
-    for(int i = 0; i < 20; i++) bmp.addPixel(0,i,255,0,0);
-    for(int i = 0; i < 20; i++) bmp.addPixel(1,i,255,255,0);
-    for(int i = 0; i < 20; i++) bmp.addPixel(2,i,255,255,255);
-    for(int i = 0; i < 20; i++) bmp.addPixel(3,i,255,0,255);
-    for(int i = 0; i < 20; i++) bmp.addPixel(4,i,0,0,0);
-    for(int i = 0; i < 20; i++) bmp.addPixel(5,i,0,255,255);
-    for(int i = 0; i < 20; i++) bmp.addPixel(6,i,0,255,0);
-    for(int i = 0; i < 20; i++) bmp.addPixel(7,i,0,0,255);
-    std::ofstream fout("test7.bmp");
-    if(!fout.is_open()) std::cout << "Failed to open file\n";
-    else {
-        std::cout << "File successfully open\n";
-        fout << bmp;
+    float n = 0;
+    float dn = 1./rad;
+    while(n < pi/2)
+    {   
+        auto difX = rad*std::cos(n);
+        auto difY = rad*std::sin(n);
+
+        int x1 = centX + difX;
+        int y1 = centY + difY;
+
+        int x2 = centX - difX;
+        int y2 = y1;
+
+        bmp.addPixel(x1, y1, cColor[0], cColor[1], cColor[2]);
+        bmp.addPixel(x2, y2, cColor[0], cColor[1], cColor[2]);
+
+        for(int i = 0; i < x1 - x2; ++i)
+        {
+            bmp.addPixel(x1 - i, y1, cColor[0], cColor[1], cColor[2]);
+        }
+
+        x1 = centX + difX;
+        y1 = centY - difY;
+
+        x2 = centX - difX;
+        y2 = y1;
+
+        bmp.addPixel(x1, y1, cColor[0], cColor[1], cColor[2]);
+        bmp.addPixel(x2, y2, cColor[0], cColor[1], cColor[2]);
+
+        for(int i = 0; i < x1 - x2; ++i)
+        {
+            bmp.addPixel(x1 - i, y1, cColor[0], cColor[1], cColor[2]);
+        }
+
+        n += dn;
     }
-    std::cout << "End BMP Test\n";
-    return 1;
+}
+
+int main(int argc, char *argv[])
+{
+    size_t numOfClusters;
+    if(argc < 2)
+    {
+        std::cout << "Usage: <n> [n - numbers of cluster]\n";
+        return 1;
+    } else {
+        auto arg = std::atoi(argv[1]);
+        if(arg > 0) 
+            numOfClusters = arg;
+        else
+        {
+            std::cout << "n - should be possitive number\n";
+            return 1;
+        }
+    }
     // Here we declare that our samples will be 2 dimensional column vectors.  
     // (Note that if you don't know the dimensionality of your vectors at compile time
     // you can change the 2 to a 0 and then set the size at runtime)
@@ -89,6 +130,10 @@ int main()
 
     // make some samples near the origin
     double radius = 0.5;
+
+    //vector of centers
+    std::vector<std::pair<size_t, size_t>> vOfCent;
+    vOfCent.push_back(std::make_pair(5,5));
     for (long i = 0; i < num; ++i)
     {
         double sign = 1;
@@ -96,6 +141,12 @@ int main()
             sign = -1;
         m(0) = 2*radius*rnd.get_random_double()-radius;
         m(1) = sign*sqrt(radius*radius - m(0)*m(0));
+
+        m(0) += 0.5; // Чтобы оказаться только в положительной плоскости
+        m(1) += 0.5;
+
+        m(0) *= 10;
+        m(1) *= 10;
 
         // add this sample to our set of samples we will run k-means 
         samples.push_back(m);
@@ -103,6 +154,7 @@ int main()
 
     // make some samples in a circle around the origin but far away
     radius = 10.0;
+    vOfCent.push_back(std::make_pair(100,100));
     for (long i = 0; i < num; ++i)
     {
         double sign = 1;
@@ -110,6 +162,12 @@ int main()
             sign = -1;
         m(0) = 2*radius*rnd.get_random_double()-radius;
         m(1) = sign*sqrt(radius*radius - m(0)*m(0));
+
+        m(0) += 10; // Чтобы оказаться только в положительной плоскости
+        m(1) += 10;
+
+        m(0) *= 10;
+        m(1) *= 10;
 
         // add this sample to our set of samples we will run k-means 
         samples.push_back(m);
@@ -117,6 +175,7 @@ int main()
 
     // make some samples in a circle around the point (25,25) 
     radius = 4.0;
+    vOfCent.push_back(std::make_pair(65,65));
     for (long i = 0; i < num; ++i)
     {
         double sign = 1;
@@ -124,6 +183,12 @@ int main()
             sign = -1;
         m(0) = 2*radius*rnd.get_random_double()-radius;
         m(1) = sign*sqrt(radius*radius - m(0)*m(0));
+
+        m(0) += 4; // Чтобы оказаться только в положительной плоскости
+        m(1) += 4;
+
+        m(0) *= 10; 
+        m(1) *= 10;
 
         // translate this point away from the origin
         m(0) += 25;
@@ -135,41 +200,65 @@ int main()
 
     // tell the kkmeans object we made that we want to run k-means with k set to 3. 
     // (i.e. we want 3 clusters)
-    test.set_number_of_centers(3);
+    test.set_number_of_centers(numOfClusters);
 
     // You need to pick some initial centers for the k-means algorithm.  So here
     // we will use the dlib::pick_initial_centers() function which tries to find
     // n points that are far apart (basically).  
-    pick_initial_centers(3, initial_centers, samples, test.get_kernel());
+    pick_initial_centers(numOfClusters, initial_centers, samples, test.get_kernel());
 
     // now run the k-means algorithm on our set of samples.  
     test.train(samples,initial_centers);
 
+    std::vector<std::vector<unsigned char>> colors{
+        {255, 0, 0}, 
+        {0, 255, 0}, 
+        {0, 0, 255}, 
+        {255,255,0}, 
+        {255,0,255}, 
+        {0,255,255},
+        {0, 0, 0}
+    };
+
+    BMP bmp(200, 200);
+    
+    for(int i = 0; i < numOfClusters; ++i)
+    {
+        drawCircle(bmp, vOfCent[i].first, vOfCent[i].second, test.get_kcentroid(i).dictionary_size(), colors[i]);
+    }
+
+    std::ofstream fout("cluster1.bmp");
+    if(!fout.is_open())
+    {
+        std::cout << "Failed to open file\n";
+    } else {
+        std::cout << "File succesfully open\n";
+        fout << bmp;
+    }
+
     // now loop over all our samples and print out their predicted class.  In this example
     // all points are correctly identified.
-    for (unsigned long i = 0; i < samples.size()/3; ++i)
-    {
-        cout << test(samples[i]) << " ";
-        cout << test(samples[i+num]) << " ";
-        cout << test(samples[i+2*num]) << "\n";
-    }
+    // for (unsigned long i = 0; i < samples.size()/3; ++i)
+    // {
+    //     cout << test(samples[i]) << " ";
+    //     cout << test(samples[i+num]) << " ";
+    //     cout << test(samples[i+2*num]) << "\n";
+    // }
 
     // Now print out how many dictionary vectors each center used.  Note that 
     // the maximum number of 8 was reached.  If you went back to the kcentroid 
     // constructor and changed the 8 to some bigger number you would see that these
     // numbers would go up.  However, 8 is all we need to correctly cluster this dataset.
-    cout << "num dictionary vectors for center 0: " << test.get_kcentroid(0).dictionary_size() << endl;
-    cout << "num dictionary vectors for center 1: " << test.get_kcentroid(1).dictionary_size() << endl;
-    cout << "num dictionary vectors for center 2: " << test.get_kcentroid(2).dictionary_size() << endl;
-
+    for(int i = 0; i < numOfClusters; ++i)
+    {
+        cout << "num dictionary vectors for center " << i << ": " << test.get_kcentroid(i).dictionary_size() << endl;
+    }
 
     // Finally, we can also solve the same kind of non-linear clustering problem with
     // spectral_cluster().  The output is a vector that indicates which cluster each sample
     // belongs to.  Just like with kkmeans, it assigns each point to the correct cluster.
-    std::vector<unsigned long> assignments = spectral_cluster(kernel_type(0.1), samples, 3);
-    cout << mat(assignments) << endl;
-
-    std::cout << "End\n";
+    // std::vector<unsigned long> assignments = spectral_cluster(kernel_type(0.1), samples, 3);
+    // cout << mat(assignments) << endl;
 }
 
 
